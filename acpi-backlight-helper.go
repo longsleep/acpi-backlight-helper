@@ -41,6 +41,11 @@ func backlightHelper(args []string) error {
 		}
 		fmt.Fprintf(os.Stdout, "%d\n", maxBrightness)
 	case "--set-brightness":
+		if os.Getuid() != 0 || os.Geteuid() != 0 {
+			fmt.Fprintf(os.Stderr, "This program can only be used by the root user\n")
+			os.Exit(4)
+		}
+
 		if len(args) != 2 {
 			return fmt.Errorf("missing brightness value")
 		}
@@ -92,7 +97,7 @@ func getMaxBrightness() (int, error) {
 }
 
 func getBrightness() (int, error) {
-	return readInt("actual_brightness")
+	return readInt("brightness")
 }
 
 func setBrightness(value int) error {
@@ -105,6 +110,8 @@ func main() {
 	err := backlightHelper(args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		os.Exit(3)
 	}
+
+	os.Exit(0)
 }
